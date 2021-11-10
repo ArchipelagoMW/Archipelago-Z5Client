@@ -1,4 +1,4 @@
-local script_version = '2021-11-08' -- Should be the last modified date
+local script_version = '2021-11-09' -- Should be the last modified date
 
 --------------------------------------------------
 -- Heavily modified form of RiptideSage's tracker
@@ -2228,9 +2228,9 @@ lib.getReceivedItemCount = function()
     return mainmemory.read_u16_be(internal_count_addr)
 end
 
-lib.receiveItem = function(senderId, itemId)
+lib.receiveItem = function(itemId)
     -- Grant item to player
-    mainmemory.write_u16_be(incoming_player_addr, senderId) -- player slot number
+    mainmemory.write_u16_be(incoming_player_addr, 0x00) -- player slot number
     mainmemory.write_u16_be(incoming_item_addr, itemId) -- id of the item to be sent
 end
 
@@ -2394,7 +2394,7 @@ local runMessageWatcher = coroutine.wrap(function()
             -- Returns message format: "requestComplete"
             if command == 'receiveItem' then
                 local itemOffset = messageParts[2]
-                lib.receiveItem(lib.localPlayerNumber,tonumber(itemOffset))
+                lib.receiveItem(tonumber(itemOffset))
                 connection:send('requestComplete')
                 return
             end

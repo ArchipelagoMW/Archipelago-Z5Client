@@ -1,4 +1,4 @@
-local script_version = '2021-11-09' -- Should be the last modified date
+local script_version = '2021-11-17' -- Should be the last modified date
 
 --------------------------------------------------
 -- Heavily modified form of RiptideSage's tracker
@@ -1099,7 +1099,7 @@ local read_ganons_castle_checks = function(mq_table_address)
         checks["Ganons Castle MQ Spirit Trial Sun Front Left Chest"] = chest_check(0xD, 0x9)
         checks["Ganons Castle MQ Spirit Trial Sun Back Left Chest"] = chest_check(0xD, 0x8)
         checks["Ganons Castle MQ Spirit Trial Sun Back Right Chest"] = chest_check(0xD, 0x7)
-        checks["Ganons Castle MQ Golden Gauntlets Chest"] = chest_check(0xD, 0x6)
+        checks["Ganons Castle MQ Spirit Trial Golden Gauntlets Chest"] = chest_check(0xD, 0x6)
 
         checks["Ganons Castle MQ Deku Scrub Left"] = scrub_sanity_check(0xD, 0x9)
         checks["Ganons Castle MQ Deku Scrub Center-Left"] = scrub_sanity_check(0xD, 0x6)
@@ -2187,7 +2187,7 @@ local rom_name_location     = player_names_address + 0x800
 
 -- Each dungeon can independently be given a master quest layout. This table contains a list of 0s and 1s
 -- which represent the dungeons' layout. 0 for normal, 1 for master quest
-local master_quest_table_address = rando_context + 0xB1E8
+local master_quest_table_address = rando_context + 0xB1F0
 
 local save_context = 0x11A5D0
 local internal_count_addr = save_context + 0x90
@@ -2228,7 +2228,7 @@ lib.getReceivedItemCount = function()
     return mainmemory.read_u16_be(internal_count_addr)
 end
 
-lib.receiveItem = function(itemId)
+lib.receiveItem = function(senderId, itemId)
     -- Grant item to player
     mainmemory.write_u16_be(incoming_player_addr, 0x00) -- player slot number
     mainmemory.write_u16_be(incoming_item_addr, itemId) -- id of the item to be sent
@@ -2394,7 +2394,7 @@ local runMessageWatcher = coroutine.wrap(function()
             -- Returns message format: "requestComplete"
             if command == 'receiveItem' then
                 local itemOffset = messageParts[2]
-                lib.receiveItem(tonumber(itemOffset))
+                lib.receiveItem(lib.localPlayerNumber,tonumber(itemOffset))
                 connection:send('requestComplete')
                 return
             end

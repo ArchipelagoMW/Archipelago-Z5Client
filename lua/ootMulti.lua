@@ -1,4 +1,4 @@
-local script_version = '2021-11-17' -- Should be the last modified date
+local script_version = '2021-11-23' -- Should be the last modified date
 
 --------------------------------------------------
 -- Heavily modified form of RiptideSage's tracker
@@ -2430,10 +2430,11 @@ local runMessageWatcher = coroutine.wrap(function()
             -- Returns message format: "requestComplete"
             if command == 'setNames' then
                 local index = 2
-                while index <= #(messageParts) do
+                while ((index <= #(messageParts)) and (index < 510)) do
                     lib.setPlayerName(messageParts[index],messageParts[index+1])
                     index = index + 2 -- Increment twice each loop
                 end
+                lib.setPlayerName(510,'APServer')
                 connection:send('requestComplete')
                 return
             end

@@ -27,10 +27,39 @@ const CLIENT_STATUS = {
 
 // DeathLink tracking
 let deathLinkEnabled = false;
-let lastForcedDeath = new Date().getTime();
-let linkIsDead = false;
-let linkIsStillDead = false;
-let linkMustDie = false;
+const DEATH_LINK_COOLDOWN = 3000; // Milliseconds
+let lastDeathLink = new Date().getTime();
+const DEATH_LINK_ALIVE = 0;
+const DEATH_LINK_KILLING = 1;
+const DEATH_LINK_DEAD = 2;
+let deathLinkState = DEATH_LINK_ALIVE;
+
+/**
+ * Returns a randomly chosen DeathLink message
+ * @param playerName
+ * @returns {string}
+ */
+const getRandomDeathLinkMessage = (playerName) => {
+  const deathLinkMessages = [
+    `${playerName} has died, and took you with them.`,
+    `${playerName} has met with a terrible fate, and they felt like sharing.`,
+    `${playerName} dug a grave big enough for everyone to share.`,
+    `Oh look, everyone died! Blame ${playerName}.`,
+    `Don't worry ${playerName}, nobody saw that. Because they're dead too.`,
+    `Have you ever heard the tragedy of Darth ${playerName} the wise?`,
+    `Death comes for us all. Because ${playerName} invited him.`,
+    `Death-warps aren't an option right now, ${playerName}...`,
+    `${playerName} used DeathLink! It's super-effective!`,
+    `Run for your lives! ${playerName} is killing people!`,
+    `Is ${playerName} throwing for content?`,
+    `${playerName} took an arrow to the knee. Now, their adventuring days are over.`,
+    `${playerName} has won a free trip to the title screen, and they invited some friends!`,
+    `All ${playerName}'s base are belong to us.`,
+    `It's dangerous to go alone, ${playerName}. Take everyone with you.`,
+  ];
+
+  return deathLinkMessages[Math.floor(Math.random() * (deathLinkMessages.length))];
+};
 
 window.addEventListener('load', async () => {
   // Handle server address change
@@ -277,50 +306,72 @@ const connectToServer = async (address, password=null) => {
               sendLocationChecks(newLocationChecks);
             }
 
-            // Check if DeathLink is enabled and Link is dead
-            if (deathLinkEnabled) {
-              if (linkIsDead) {
-                if (!linkIsStillDead) { // Link is dead, and it just happened
-                  // Keep track of Link's state to prevent sending multiple DeathLink signals per death
-                  linkIsStillDead = true;
-
-                  // Check if it has been at least ten seconds since the last DeathLink network signal
-                  // was send or received
-                  if (new Date().getTime() > (lastForcedDeath + 10000)) {
-                    if (serverStatus && serverSocket.readyState === WebSocket.OPEN) {
-                      // Link just died, so ignore DeathLink signals for the next ten seconds
-                      lastForcedDeath = new Date().getTime();
-                      serverSocket.send(JSON.stringify([{
-                        cmd: 'Bounce',
-                        tags: ['DeathLink'],
-                        data: {
-                          time: Math.floor(lastForcedDeath / 1000),
-                          source: players.find((player) =>
-                            (player.team === playerTeam) && (player.slot === playerSlot)).alias, // Local player alias
-                        },
-                      }]));
-                    }
-                  }
-                }
-              }
-
-              // If Link is supposed to die, kill him
-              if (linkMustDie) {
-                await killLink();
-                linkMustDie = false;
-              }
-            }
-
             // Determine if Link is currently dead
-            let linkIsAlive = await isLinkAlive();
+            const linkIsAlive = await isLinkAlive();
             if (linkIsAlive === null) {
               appendConsoleMessage('Timeout while retrieving linkIsAlive.');
               clearInterval(n64Interval);
               n64IntervalComplete = true;
               return;
-            } else {
-              linkIsDead = (parseInt(linkIsAlive[0], 10) === 0);
-              if (!linkIsDead) { linkIsStillDead = false; }
+            }
+
+            // Useful boolean for logical purposes
+            const linkIsDead = (parseInt(linkIsAlive[0], 10) === 0);
+
+            // Check if DeathLink is enabled and Link is dead
+            if (deathLinkEnabled) {
+              if (linkIsDead) {
+                if (
+                  (deathLinkState === DEATH_LINK_ALIVE) && // Player was last known to be alive
+                  ((lastDeathLink + DEATH_LINK_COOLDOWN) < new Date().getTime()) // Cooldown has passed
+                ) {
+                  // Send the DeathLink message
+                  if (serverSocket && serverSocket.readyState === WebSocket.OPEN) {
+                    // Set the state to DEAD before sending the message
+                    deathLinkState = DEATH_LINK_DEAD;
+
+                    // Determine the DeathLink message
+                    const causeMessage = getRandomDeathLinkMessage(players.find((player) =>
+                      (player.team === playerTeam) && (player.slot === playerSlot)).alias);
+
+                    // Send the DeathLink signal
+                    lastDeathLink = new Date().getTime();
+                    serverSocket.send(JSON.stringify([{
+                      cmd: 'Bounce',
+                      tags: ['DeathLink'],
+                      data: {
+                        time: (lastDeathLink / 1000),
+                        source: players.find((player) =>
+                          (player.team === playerTeam) && (player.slot === playerSlot)).alias,
+                        cause: causeMessage,
+                      }
+                    }]));
+                    appendConsoleMessage(causeMessage);
+                  }
+                }
+
+                // If the player is dead, the DeathLink state must reflect that
+                deathLinkState = DEATH_LINK_DEAD;
+              }
+
+              if (!linkIsDead) {
+                switch (deathLinkState) {
+                  case DEATH_LINK_ALIVE:
+                    // Do nothing, this is fine
+                    break;
+
+                  case DEATH_LINK_KILLING:
+                    // Keep sending the kill signal if the player is supposed to be dead. This prevents bugs where
+                    // sometimes players will end up with zero health, but still be alive
+                    await killLink();
+                    break;
+
+                  case DEATH_LINK_DEAD:
+                    // If the player is alive, DeathLink signals may be sent again
+                    deathLinkState = DEATH_LINK_ALIVE;
+                    break;
+                }
+              }
             }
 
             // Interval complete, allow a new run
@@ -409,15 +460,32 @@ const connectToServer = async (address, password=null) => {
           break;
 
         case 'Bounced':
-          // DeathLink handling
-          if (command.tags.includes('DeathLink')) {
-            // Has it been at least ten seconds since the last time Link was forcibly killed?
-            if (deathLinkEnabled && (new Date().getTime() > (lastForcedDeath + 10000))) {
-              // Notify the player of the DeathLink occurrence, and who is to blame
-              appendConsoleMessage(`${command.data.source} has died, and took you with them.`);
+          // This command can be used for a variety of things. Currently, it is used for keep-alive and DeathLink.
+          // keep-alive packets can be safely ignored
 
-              // Kill Link
-              linkMustDie = true;
+          // DeathLink handling
+          if (
+            command.hasOwnProperty('tags') && // If there are tags on this message
+            command.tags.includes('DeathLink') && // If those tags include DeathLink
+            deathLinkEnabled // If DeathLink is enabled
+          ) {
+            if (
+              (deathLinkState === DEATH_LINK_ALIVE) && // The player was last known to be alive
+              ((lastDeathLink + DEATH_LINK_COOLDOWN) < new Date().getTime()) // Cooldown has passed
+            ) {
+              // Update the DeathLink state and wait a split second
+              deathLinkState = DEATH_LINK_KILLING;
+              lastDeathLink = new Date().getTime();
+              await new Promise((resolve) => setTimeout(resolve, 50));
+
+              // Kill the player and print a message to the console informing the player of who is responsible
+              killLink().then(() => {
+                if (command.data.hasOwnProperty('cause') && command.data.cause) {
+                  appendConsoleMessage(command.data.cause);
+                  return;
+                }
+                appendConsoleMessage(getRandomDeathLinkMessage(command.data.source));
+              });
             }
           }
           break;

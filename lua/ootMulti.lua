@@ -2384,23 +2384,22 @@ local runMessageWatcher = coroutine.wrap(function()
             if not msg then return end
 
             -- Handle the message
-            -- Message structure: command|arg1|arg2|...
+            -- Message structure: command|requestId|arg1|arg2|...
             -- Different commands have different expectations of arguments, described in comments where each
             -- command is handled
             local messageParts = stringSplit(msg, '|')
             local command = messageParts[1]
 
-            -- Expects message format: "receiveItem|itemOffset"
-            -- Returns message format: "requestComplete"
+            -- Expects message format: "receiveItem|requestId|itemOffset"
+            -- Returns message format: "requestComplete|requestId"
             if command == 'receiveItem' then
-                local itemOffset = messageParts[2]
-                lib.receiveItem(lib.localPlayerNumber,tonumber(itemOffset))
-                connection:send('requestComplete')
+                lib.receiveItem(lib.localPlayerNumber,tonumber(messageParts[3]))
+                connection:send('requestComplete|' .. messageParts[2])
                 return
             end
 
-            -- Expects message format: "isItemReceivable"
-            -- Returns message format: "requestComplete|readyStatus"
+            -- Expects message format: "isItemReceivable|requestId"
+            -- Returns message format: "requestComplete|requestId|readyStatus"
             if command == 'isItemReceivable' then
                 local readyStatus = ""
                 if lib.isItemReceivable() then
@@ -2408,41 +2407,41 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     readyStatus = "0"
                 end
-                connection:send('requestComplete|' .. readyStatus)
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. readyStatus)
                 return
             end
 
-            -- Expects message format: "getReceivedItemCount"
-            -- Returns message format: "requestComplete|receivedItemCount"
+            -- Expects message format: "getReceivedItemCount|requestId"
+            -- Returns message format: "requestComplete|requestId|receivedItemCount"
             if command == 'getReceivedItemCount' then
-                connection:send('requestComplete|' .. lib.getReceivedItemCount())
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. lib.getReceivedItemCount())
                 return
             end
 
-            -- Expects message format: "getRomName"
-            -- Returns message format: "requestComplete|romName"
+            -- Expects message format: "getRomName|requestId"
+            -- Returns message format: "requestComplete|requestId|romName"
             if command == 'getRomName' then
-                connection:send('requestComplete|' .. lib.getRomName())
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. lib.getRomName())
                 return
             end
 
-            -- Expects message format: "setNames|player1Slot|player1Name|player2Slot|player2Name|..."
-            -- Returns message format: "requestComplete"
+            -- Expects message format: "setNames|requestId|player1Slot|player1Name|player2Slot|player2Name|..."
+            -- Returns message format: "requestComplete|requestId"
             if command == 'setNames' then
-                local index = 2
+                local index = 3
                 while ((index <= #(messageParts)) and (index < 510)) do
                     lib.setPlayerName(messageParts[index],messageParts[index+1])
                     index = index + 2 -- Increment twice each loop
                 end
                 lib.setPlayerName(510,'APServer')
-                connection:send('requestComplete')
+                connection:send('requestComplete|' .. messageParts[2])
                 return
             end
 
-            -- Expects message format: "getLocationChecks"
-            -- Returns message format: "requestComplete|location1Name|location1Checked|location2Name|..."
+            -- Expects message format: "getLocationChecks|requestId"
+            -- Returns message format: "requestComplete|requestId|location1Name|location1Checked|location2Name|..."
             if command == 'getLocationChecks' then
-                local message = 'requestComplete'
+                local message = 'requestComplete|' .. messageParts[2]
                     for location_name, checked in pairs(lib.getLocationChecks()) do
                         message = message .. "|" .. location_name .. "|"
                         if checked then
@@ -2455,15 +2454,15 @@ local runMessageWatcher = coroutine.wrap(function()
                 return
             end
 
-            -- Expects message format: "getCurrentGameMode"
-            -- Returns message format: "requestComplete|gameMode"
+            -- Expects message format: "getCurrentGameMode|requestId"
+            -- Returns message format: "requestComplete|requestId|gameMode"
             if command == 'getCurrentGameMode' then
-                connection:send('requestComplete|' .. lib.getCurrentGameMode())
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. lib.getCurrentGameMode())
                 return
             end
 
-            -- Expects message format: "isGameComplete"
-            -- Returns message format: "requestComplete|1 or 0"
+            -- Expects message format: "isGameComplete|requestId"
+            -- Returns message format: "requestComplete|requestId|1 or 0"
             if command == 'isGameComplete' then
                 local gameComplete = ""
                 if lib.isGameComplete() then
@@ -2471,12 +2470,12 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     gameComplete = "0"
                 end
-                connection:send('requestComplete|' .. gameComplete)
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. gameComplete)
                 return
             end
 
-            -- Expects message format: "isDeathLinkEnabled"
-            -- Returns message format: "requestComplete|1 or 0"
+            -- Expects message format: "isDeathLinkEnabled|requestId"
+            -- Returns message format: "requestComplete|requestId|1 or 0"
             if command == 'isDeathLinkEnabled' then
                 local death_link_enabled = ""
                 if lib.isDeathLinkEnabled() then
@@ -2484,12 +2483,12 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     death_link_enabled = "0"
                 end
-                connection:send('requestComplete|' .. death_link_enabled)
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. death_link_enabled)
                 return
             end
 
-            -- Expects message format: "isLinkAlive"
-            -- Returns message format: "requestComplete|1 or 0"
+            -- Expects message format: "isLinkAlive|requestId"
+            -- Returns message format: "requestComplete|requestId|1 or 0"
             if command == 'isLinkAlive' then
                 local link_is_alive = ""
                 if lib.isLinkAlive() then
@@ -2497,15 +2496,15 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     link_is_alive = "0"
                 end
-                connection:send('requestComplete|' .. link_is_alive)
+                connection:send('requestComplete|' .. messageParts[2] .. '|' .. link_is_alive)
                 return
             end
 
-            -- Expects message format: "isDeathLinkEnabled"
-            -- Returns message format: "requestComplete"
+            -- Expects message format: "isDeathLinkEnabled|requestId"
+            -- Returns message format: "requestComplete|requestId"
             if command == 'killLink' then
                 lib.killLink()
-                connection:send('requestComplete')
+                connection:send('requestComplete|' .. messageParts[2])
                 return
             end
         end)()

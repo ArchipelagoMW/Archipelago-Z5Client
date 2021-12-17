@@ -1,69 +1,53 @@
-let currentResolve = null;
-let currentTimeout = null;
+const activeRequests = {};
 
 window.addEventListener('load', () => {
-  window.oot.requestComplete((...args) => {
-    if (currentResolve) { currentResolve(...args); }
+  window.oot.requestComplete((requestId, ...args) => {
+    if (activeRequests.hasOwnProperty(requestId)) {
+      activeRequests[requestId](...args);
+      delete activeRequests[requestId];
+    }
   });
 });
 
-const setResolve = (resolve) => {
-  currentResolve = resolve;
-  if(currentTimeout) { clearTimeout(currentTimeout); }
-  currentTimeout = setTimeout(() => {
-    window.oot.disconnectAllClients();
-    appendConsoleMessage('A timeout has occurred and the connection to BizHawk and the AP server ' +
-      'have been terminated.');
-    appendConsoleMessage('The client will auto-reconnect once BizHawk resumes communication.');
+// Generate a requestId, and make sure it doesn't overwrite a current requestId
+const generateRequestId = () => {
+  const requestId = Math.floor(Math.random() * 10000000000);
+  if (activeRequests.hasOwnProperty(requestId)) {
+    return generateRequestId();
+  }
+  return requestId;
+};
 
-    // Client timeouts occur if the user manually disconnects from the AP server. If that was not the case,
-    // suggest another possible reason this may have occurred
-    if (!preventReconnect) {
-      appendConsoleMessage('This probably happened because you opened a menu in BizHawk.');
-    }
-
-    // Stop querying the n64
-    if (n64Interval) {
-      clearInterval(n64Interval);
-      n64Interval = null;
-      n64Connected = false;
-    }
-
-    // Close the connection to the AP server
-    if (serverSocket && serverSocket.readyState === WebSocket.OPEN) {
-      serverSocket.close();
-    }
-
-    // Report timeout on most recent request and reset tracking data
-    if (currentResolve) { currentResolve(null); }
-    currentResolve = null;
-    currentTimeout = null;
-  }, 3000);
+/**
+ * Save the resolution function to the map of activeRequests, and return its requestId
+ * @param resolve
+ * @returns {*|number} requestId
+ */
+const assignResolve = (resolve) => {
+  // TODO: Maybe re-implement a timeout of like 60 seconds just for safety?
+  const requestId = generateRequestId();
+  activeRequests[requestId] = resolve;
+  return requestId;
 };
 
 const getLocationChecks = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.getLocationChecks();
+  window.oot.getLocationChecks(assignResolve(resolve));
 });
 
 const setNames = (namesObj) => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.setNames(namesObj);
+  window.oot.setNames(assignResolve(resolve), namesObj);
 });
 
 const getRomName = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.getRomName();
+  window.oot.getRomName(assignResolve(resolve));
 });
 
 const getReceivedItemCount = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.getReceivedItemCount();
+  window.oot.getReceivedItemCount(assignResolve(resolve));
 });
 
 const isItemReceivable = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.isItemReceivable();
+  window.oot.isItemReceivable(assignResolve(resolve));
 });
 
 const receiveItem = (itemId) => new Promise((resolve) => {
@@ -77,31 +61,25 @@ const receiveItem = (itemId) => new Promise((resolve) => {
     return window.logging.writeToLog(`OoT has no such item. (itemId: ${apItemsById[itemId]})`);
   }
 
-  setResolve(resolve);
-  window.oot.receiveItem(romItemsByName[apItemsById[itemId]]);
+  window.oot.receiveItem(assignResolve(resolve), romItemsByName[apItemsById[itemId]]);
 });
 
 const getCurrentGameMode = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.getCurrentGameMode();
+  window.oot.getCurrentGameMode(assignResolve(resolve));
 });
 
 const isGameComplete = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.isGameComplete();
+  window.oot.isGameComplete(assignResolve(resolve));
 });
 
 const isDeathLinkEnabled = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.isDeathLinkEnabled();
+  window.oot.isDeathLinkEnabled(assignResolve(resolve));
 });
 
 const isLinkAlive = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.isLinkAlive();
+  window.oot.isLinkAlive(assignResolve(resolve));
 });
 
 const killLink = () => new Promise((resolve) => {
-  setResolve(resolve);
-  window.oot.killLink();
+  window.oot.killLink(assignResolve(resolve));
 });

@@ -13,17 +13,17 @@ contextBridge.exposeInMainWorld('logging', {
 // OoT Interaction
 contextBridge.exposeInMainWorld('oot', {
   // Functions callable by renderer to cause IPCMain to perform an action
-  receiveItem: (itemOffset) => ipcRenderer.send('receiveItem', itemOffset),
-  isItemReceivable: () => ipcRenderer.send('isItemReceivable'),
-  getReceivedItemCount: () => ipcRenderer.send('getReceivedItemCount'),
-  getRomName: () => ipcRenderer.send('getRomName'),
-  setNames: (namesObj) => ipcRenderer.send('setNames', namesObj),
-  getLocationChecks: () => ipcRenderer.send('getLocationChecks'),
-  getCurrentGameMode: () => ipcRenderer.send('getCurrentGameMode'),
-  isGameComplete: () => ipcRenderer.send('isGameComplete'),
-  isDeathLinkEnabled: () => ipcRenderer.send('isDeathLinkEnabled'),
-  isLinkAlive: () => ipcRenderer.send('isLinkAlive'),
-  killLink: () => ipcRenderer.send('killLink'),
+  receiveItem: (requestId, itemOffset) => ipcRenderer.send('receiveItem', requestId, itemOffset),
+  isItemReceivable: (requestId) => ipcRenderer.send('isItemReceivable', requestId),
+  getReceivedItemCount: (requestId) => ipcRenderer.send('getReceivedItemCount', requestId),
+  getRomName: (requestId) => ipcRenderer.send('getRomName', requestId),
+  setNames: (requestId, namesObj) => ipcRenderer.send('setNames', requestId, namesObj),
+  getLocationChecks: (requestId) => ipcRenderer.send('getLocationChecks', requestId),
+  getCurrentGameMode: (requestId) => ipcRenderer.send('getCurrentGameMode', requestId),
+  isGameComplete: (requestId) => ipcRenderer.send('isGameComplete', requestId),
+  isDeathLinkEnabled: (requestId) => ipcRenderer.send('isDeathLinkEnabled', requestId),
+  isLinkAlive: (requestId) => ipcRenderer.send('isLinkAlive', requestId),
+  killLink: (requestId) => ipcRenderer.send('killLink', requestId),
   disconnectAllClients: () => ipcRenderer.send('disconnectAllClients'),
 
   // Function listenable by renderer to allow IPCMain to report a completed request

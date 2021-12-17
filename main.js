@@ -275,61 +275,61 @@ net.createServer((socket) => {
 }).listen(port, hostname);
 
 // Interprocess communication with the renderer process, used for communication with OoT LUA Script
-ipcMain.on('receiveItem', (event, itemOffset) => {
+ipcMain.on('receiveItem', (event, requestId, itemOffset) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage(`receiveItem|${itemOffset}`));
+    socket.write(socketMessage(`receiveItem|${requestId}|${itemOffset}`));
   });
 });
-ipcMain.on('isItemReceivable', (event) => {
+ipcMain.on('isItemReceivable', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('isItemReceivable'));
+    socket.write(socketMessage(`isItemReceivable|${requestId}`));
   });
 });
-ipcMain.on('getReceivedItemCount', (event) => {
+ipcMain.on('getReceivedItemCount', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('getReceivedItemCount'));
+    socket.write(socketMessage(`getReceivedItemCount|${requestId}`));
   });
 });
-ipcMain.on('getRomName', (event) => {
+ipcMain.on('getRomName', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('getRomName'));
+    socket.write(socketMessage(`getRomName|${requestId}`));
   });
 });
-ipcMain.on('setNames', (event, namesObj) => {
+ipcMain.on('setNames', (event, requestId, namesObj) => {
   Object.values(socketClients).forEach((socket) => {
-    let commandStr = `setNames`;
+    let commandStr = `setNames|${requestId}`;
     Object.keys(namesObj).forEach((key) => commandStr += `|${key}|${namesObj[key]}`);
     socket.write(socketMessage(commandStr));
   });
 });
-ipcMain.on('getLocationChecks', (event) => {
+ipcMain.on('getLocationChecks', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('getLocationChecks'));
+    socket.write(socketMessage(`getLocationChecks|${requestId}`));
   });
 });
-ipcMain.on('getCurrentGameMode', (event) => {
+ipcMain.on('getCurrentGameMode', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('getCurrentGameMode'));
+    socket.write(socketMessage(`getCurrentGameMode|${requestId}`));
   });
 });
-ipcMain.on('isGameComplete', (event) => {
+ipcMain.on('isGameComplete', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('isGameComplete'));
+    socket.write(socketMessage(`isGameComplete|${requestId}`));
   });
 });
-ipcMain.on('isDeathLinkEnabled', (event) => {
+ipcMain.on('isDeathLinkEnabled', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('isDeathLinkEnabled'));
+    socket.write(socketMessage(`isDeathLinkEnabled|${requestId}`));
   });
 });
-ipcMain.on('isLinkAlive', (event) => {
+ipcMain.on('isLinkAlive', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('isLinkAlive'));
+    socket.write(socketMessage(`isLinkAlive|${requestId}`));
   });
 });
-ipcMain.on('killLink', (event) => {
+ipcMain.on('killLink', (event, requestId) => {
   Object.values(socketClients).forEach((socket) => {
-    socket.write(socketMessage('killLink'));
+    socket.write(socketMessage(`killLink|${requestId}`));
   });
 });
 ipcMain.on('disconnectAllClients', (event) => {

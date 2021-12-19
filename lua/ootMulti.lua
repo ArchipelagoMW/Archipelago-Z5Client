@@ -2187,7 +2187,7 @@ local rom_name_location     = player_names_address + 0x800
 
 -- Each dungeon can independently be given a master quest layout. This table contains a list of 0s and 1s
 -- which represent the dungeons' layout. 0 for normal, 1 for master quest
-local master_quest_table_address = rando_context + 0xB1F0
+local master_quest_table_address = rando_context + 0xB220
 
 local save_context = 0x11A5D0
 local internal_count_addr = save_context + 0x90

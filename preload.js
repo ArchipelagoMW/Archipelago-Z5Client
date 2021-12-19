@@ -27,7 +27,7 @@ contextBridge.exposeInMainWorld('oot', {
   disconnectAllClients: () => ipcRenderer.send('disconnectAllClients'),
 
   // Function listenable by renderer to allow IPCMain to report a completed request
-  requestComplete: (callback) => ipcRenderer.on('requestComplete', (event, ...args) => callback(...args)),
+  requestComplete: (callback) => ipcRenderer.on('requestComplete', (event, ...args) => callback.apply(null, ...args)),
 
   // Function listenable by renderer to allow IPCMain to report a connected or disconnected client
   deviceConnected: (callback) => ipcRenderer.on('deviceConnected', (event, connected) => callback(connected)),

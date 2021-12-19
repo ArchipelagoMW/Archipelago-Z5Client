@@ -2,8 +2,9 @@ const activeRequests = {};
 
 window.addEventListener('load', () => {
   window.oot.requestComplete((requestId, ...args) => {
+    // Act on the returned request if its id exists as a key of activeRequests
     if (activeRequests.hasOwnProperty(requestId)) {
-      activeRequests[requestId](...args);
+      activeRequests[requestId].apply(null, [args]);
       delete activeRequests[requestId];
     }
   });

@@ -94,6 +94,7 @@ const createWindow = () => {
       contextIsolation: true,
       enableRemoteModule: false,
       preload: path.join(__dirname, 'preload.js'),
+      backgroundThrottling: false,
     },
   });
 
@@ -110,6 +111,7 @@ const createPatchingWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
+      backgroundThrottling: false,
     },
   });
 

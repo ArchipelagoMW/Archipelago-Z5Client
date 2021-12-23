@@ -39,9 +39,21 @@ window.addEventListener('load', () => {
     statusDisplay.classList.remove(connected ? 'disconnected' : 'connected');
     statusDisplay.innerText = connected ? 'Connected' : 'Disconnected';
 
+    // If an n64 is not connected, stop the interval if running and clear all active requests
+    if (!n64Connected) {
+      if (n64Interval) {
+        clearInterval(n64Interval);
+        n64Interval = null;
+        n64IntervalComplete = true;
+        window.oot.disconnectAllClients();
+        Object.keys(activeRequests).forEach((key) => delete activeRequests[key]);
+      }
+      return;
+    }
+
     // If the client has entered a server address, attempt to reconnect to that server
     const serverAddress = document.getElementById('server-address').value;
-    if (serverAddress) {
+    if (n64Connected && serverAddress) {
       await connectToServer(serverAddress, serverPassword);
     }
   });

@@ -140,10 +140,6 @@ const connectToServer = async (address, password=null) => {
 
           // Get the rom name
           const romName = await getRomName();
-          if (romName === null) {
-            appendConsoleMessage('Timeout while retrieving the rom name. Unable to connect to AP server.');
-            return;
-          }
 
           // Determine if DeathLink is enabled
           const deathLink = await isDeathLinkEnabled();
@@ -209,35 +205,22 @@ const connectToServer = async (address, password=null) => {
             // Determine if the game is complete, and notify the server if that has not been done already
             if (!gameComplete) {
               const romGameComplete = await isGameComplete();
-              if (romGameComplete === null) {
-                appendConsoleMessage('Timeout while retrieving the game completion status.');
-                clearInterval(n64Interval);
-                n64IntervalComplete = true;
-                return;
-              } else {
-                if (parseInt(romGameComplete[0], 10) === 1) {
-                  // Notify AP server of game completion
-                  if (serverSocket && serverSocket.readyState === WebSocket.OPEN) {
-                    gameComplete = true;
-                    serverSocket.send(JSON.stringify([
-                      {
-                        cmd: 'StatusUpdate',
-                        status: CLIENT_STATUS.CLIENT_GOAL,
-                      }
-                    ]));
-                  }
+              if (parseInt(romGameComplete[0], 10) === 1) {
+                // Notify AP server of game completion
+                if (serverSocket && serverSocket.readyState === WebSocket.OPEN) {
+                  gameComplete = true;
+                  serverSocket.send(JSON.stringify([
+                    {
+                      cmd: 'StatusUpdate',
+                      status: CLIENT_STATUS.CLIENT_GOAL,
+                    }
+                  ]));
                 }
               }
             }
 
             // Check if Link is currently able to receive an item
             let itemReceivable = await isItemReceivable();
-            if (itemReceivable === null) {
-              appendConsoleMessage('Timeout while retrieving value for isItemReceivable.');
-              clearInterval(n64Interval);
-              n64IntervalComplete = true;
-              return;
-            }
             itemReceivable = (parseInt(itemReceivable[0], 10) === 1);
 
             if (receiveItems) {
@@ -245,13 +228,6 @@ const connectToServer = async (address, password=null) => {
               // we know if link is able to receive an item, the received items count will always be correct
               if (itemReceivable) {
                 let receivedItemCount = await getReceivedItemCount();
-                if (receivedItemCount === null) {
-                  appendConsoleMessage('Timeout while retrieving the received item count.');
-                  clearInterval(n64Interval);
-                  n64IntervalComplete = true;
-                  return;
-                }
-
                 receivedItemCount = receivedItemCount[0];
                 if (receivedItemCount < itemsReceived.length) {
                   await setNames(romPlayerNames);
@@ -262,12 +238,6 @@ const connectToServer = async (address, password=null) => {
 
             // Do not check locations if the title screen is loaded
             const gameMode = await getCurrentGameMode();
-            if (gameMode === null) {
-              appendConsoleMessage('Timeout while retrieving current game mode.');
-              clearInterval(n64Interval);
-              n64IntervalComplete = true;
-              return;
-            }
             if (!['Normal Gameplay', 'Cutscene', 'Paused'].includes(gameMode[0])) {
               n64IntervalComplete = true;
               return;
@@ -275,12 +245,6 @@ const connectToServer = async (address, password=null) => {
 
             // Get location checks from OoT
             const romLocationsChecked = await getLocationChecks();
-            if (romLocationsChecked === null) {
-              appendConsoleMessage('Timeout while retrieving checked locations.');
-              clearInterval(n64Interval);
-              n64IntervalComplete = true;
-              return;
-            }
 
             // Look for new location checks
             let romLocationIndex = 0;
@@ -308,12 +272,6 @@ const connectToServer = async (address, password=null) => {
 
             // Determine if Link is currently dead
             const linkIsAlive = await isLinkAlive();
-            if (linkIsAlive === null) {
-              appendConsoleMessage('Timeout while retrieving linkIsAlive.');
-              clearInterval(n64Interval);
-              n64IntervalComplete = true;
-              return;
-            }
 
             // Useful boolean for logical purposes
             const linkIsDead = (parseInt(linkIsAlive[0], 10) === 0);

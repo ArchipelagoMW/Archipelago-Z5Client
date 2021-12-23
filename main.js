@@ -5,6 +5,9 @@ const md5 = require('md5');
 const childProcess = require('child_process');
 const net = require('net');
 
+// Prevent Chromium from lowering the priority of the renderer process
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
 // File handler used for the log file, may be opened in a couple locations
 let logFile = null;
 

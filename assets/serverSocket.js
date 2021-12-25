@@ -110,6 +110,10 @@ const connectToServer = async (address, password=null) => {
   // Store the last given password
   serverPassword = password;
 
+  // Reset the array of items received on every connection. This prevents the client from accepting cheat items
+  // multiple times in the case of an AP server reconnection.
+  itemsReceived = [];
+
   // Attempt to connect to the server
   serverSocket = new WebSocket(`ws://${serverAddress}`);
   serverSocket.onopen = (event) => {};

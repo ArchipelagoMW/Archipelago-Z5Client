@@ -61,15 +61,6 @@ const getRandomDeathLinkMessage = (playerName) => {
   return deathLinkMessages[Math.floor(Math.random() * (deathLinkMessages.length))];
 };
 
-// Clear the Lua request queue, stop n64 interval, reset flags
-const resetN64Networking = () => {
-  if (n64Interval) { clearInterval(n64Interval); }
-  n64Interval = null;
-  n64IntervalComplete = true;
-  if (!n64Connected) { window.oot.disconnectAllClients(); }
-  Object.keys(activeRequests).forEach((key) => delete activeRequests[key]);
-};
-
 window.addEventListener('load', async () => {
   // Handle server address change
   document.getElementById('server-address').addEventListener('keydown', async (event) => {
@@ -103,16 +94,23 @@ const connectToServer = async (address, password=null) => {
   }
 
   // n64 networking must always be reset before initiating a server connection
-  resetN64Networking();
+  // Clear the Lua request queue, stop n64 interval, reset flags
+  if (n64Interval) { clearInterval(n64Interval); }
+  n64Interval = null;
+  n64IntervalComplete = true;
+  Object.keys(activeRequests).forEach((key) => delete activeRequests[key]);
+
+  // If there are no n64 devices available, do nothing
+  if (!n64Connected) {
+    window.oot.disconnectAllClients();
+    return;
+  }
 
   // If an empty string is passed as the address, do not attempt to connect
   if (!address) { return; }
 
   // This is a new connection attempt, no auth error has occurred yet
   serverAuthError = false;
-
-  // If there are no n64 devices available, do nothing
-  if (!n64Connected) { return; }
 
   // Determine the server address
   let serverAddress = address;

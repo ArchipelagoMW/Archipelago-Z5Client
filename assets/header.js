@@ -48,12 +48,15 @@ window.addEventListener('load', () => {
         window.oot.disconnectAllClients();
         Object.keys(activeRequests).forEach((key) => delete activeRequests[key]);
       }
+
+      // Disconnect from the AP server
+      await connectToServer(null);
       return;
     }
 
     // If the client has entered a server address, attempt to reconnect to that server
     const serverAddress = document.getElementById('server-address').value;
-    if (n64Connected && serverAddress) {
+    if (serverAddress) {
       await connectToServer(serverAddress, serverPassword);
     }
   });

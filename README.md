@@ -4,8 +4,7 @@
 the client.
 - `Z5Client-win32-x64-(version).zip`: This is a zip file which may be used as a stand-alone installation. It
 is not recommended to use this.
-- `get-bizhawk.ps1`: This is a Windows Powershell script which will download and configure BizHawk 2.3, which is
-currently the only version of BizHawk supported for Archipelago's implementation of OoT.
+- `get-bizhawk.ps1`: This is a Windows Powershell script which will download and configure BizHawk 2.7.
 - `ootMulti.lua`: This is the LUA script you will need to load into BizHawk after loading the randomizer ROM.
 
 ## How to Install
@@ -13,9 +12,9 @@ currently the only version of BizHawk supported for Archipelago's implementation
 Simply double-click on the `Z5Client-win32-x64-(version).exe` file, and the program will automatically install
 and launch. You may delete the setup file after installation.
 
-### BizHawk 2.3
+### BizHawk 2.7
 Right-click on the `get-bizhawk.ps1` file and choose "Run with PowerShell." The script will open a PowerShell
-window and download and install the BizHawk prerequisites, BizHawk itself, and automatically configure some LUA
+window and download and install the BizHawk prerequisites, BizHawk itself, and automatically configure some
 options for you. You will still need to configure your controls upon first launching BizHawk.
 
 ## How to Play:

@@ -99,6 +99,11 @@ window.addEventListener('load', () => {
     // Clear the input box
     commandInput.value = '';
   });
+
+  const consoleWindow = document.getElementById('console-output-wrapper');
+  consoleWindow.addEventListener('scroll', (evt) => {
+    autoScrollPaused = Math.ceil(consoleWindow.scrollTop + consoleWindow.offsetHeight) < consoleWindow.scrollHeight;
+  });
 });
 
 const appendConsoleMessage = (message) => {
@@ -113,7 +118,7 @@ const appendConsoleMessage = (message) => {
   messageDiv.classList.add('console-output');
   messageDiv.innerText = message;
   monitor.appendChild(messageDiv);
-  messageDiv.scrollIntoView(false);
+  if (!autoScrollPaused) { messageDiv.scrollIntoView(false); }
 };
 
 const appendFormattedConsoleMessage = (messageParts) => {
@@ -157,7 +162,7 @@ const appendFormattedConsoleMessage = (messageParts) => {
 
   // Append the message div to the monitor
   monitor.appendChild(messageDiv);
-  messageDiv.scrollIntoView(false);
+  if (!autoScrollPaused) { messageDiv.scrollIntoView(false); }
 };
 
 const cacheCommand = (command) => {

@@ -43,3 +43,6 @@ let ootLocationsByName = {};
 
 // The user has the option to pause receiving items
 let receiveItems = true;
+
+// Tracks if auto-scrolling is currently paused
+let autoScrollPaused = false;

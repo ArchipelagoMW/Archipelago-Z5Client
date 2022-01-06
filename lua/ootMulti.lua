@@ -1,4 +1,4 @@
-local script_version = '2022-01-05' -- Should be the last modified date
+local script_version = '2022-01-06' -- Should be the last modified date
 
 --------------------------------------------------
 -- Heavily modified form of RiptideSage's tracker
@@ -2310,11 +2310,7 @@ lib.isLinkAlive = function()
     -- Read Link's current HP value
     local hp_counter = mainmemory.read_u16_be(0x11A600)
 
-    return (
-        (game_mode ~= "Dying") and
-        (game_mode ~= "Dead") and
-        (hp_counter > 0)
-    )
+    return (hp_counter > 0)
 end
 
 lib.killLink = function()

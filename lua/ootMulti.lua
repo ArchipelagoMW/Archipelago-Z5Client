@@ -2301,9 +2301,8 @@ lib.isDeathLinkEnabled = function()
 end
 
 lib.isLinkAlive = function()
-    -- Read Link's current HP
-    local hp_counter = mainmemory.read_u16_be(0x11A600)
-    return hp_counter > 0
+    local game_mode = lib.getCurrentGameMode()
+    return (game_mode ~= "Dying") and (game_mode ~= "Dying Menu Start") and (game_mode ~= "Dead")
 end
 
 lib.killLink = function()

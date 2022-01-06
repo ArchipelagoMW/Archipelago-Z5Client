@@ -1,4 +1,4 @@
-local script_version = '2021-12-25' -- Should be the last modified date
+local script_version = '2022-01-05' -- Should be the last modified date
 
 --------------------------------------------------
 -- Heavily modified form of RiptideSage's tracker

@@ -2301,8 +2301,15 @@ lib.isDeathLinkEnabled = function()
 end
 
 lib.isLinkAlive = function()
+    -- Load the current game mode
     local game_mode = lib.getCurrentGameMode()
+
+    -- If the N64 Logo is loaded, Link isn't dead, he just doesn't exist
+    if (game_mode == "N64 Logo" or game_mode == "File Select") then return true end
+
+    -- Read Link's current HP value
     local hp_counter = mainmemory.read_u16_be(0x11A600)
+
     return (
         (game_mode ~= "Dying") and
         (game_mode ~= "Dead") and

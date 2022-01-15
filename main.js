@@ -283,7 +283,6 @@ net.createServer((socket) => {
 }).listen(port, hostname);
 
 const handleSocketMessage = (message) => {
-  console.log(message);
   const messageParts = message.split('|');
   const messageType = messageParts.splice(0,1)[0];
   switch (messageType) {

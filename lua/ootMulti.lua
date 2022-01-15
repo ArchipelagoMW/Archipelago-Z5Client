@@ -2370,6 +2370,10 @@ local connectToAPClient = function(reconnect)
     return true
 end
 
+local buildSocketMessage = function(msg)
+    return (msg .. '\n')
+end
+
 local runMessageWatcher = coroutine.wrap(function()
     while true do
         (function()
@@ -2401,7 +2405,7 @@ local runMessageWatcher = coroutine.wrap(function()
             -- Returns message format: "requestComplete|requestId"
             if command == 'receiveItem' then
                 lib.receiveItem(tonumber(messageParts[3]))
-                connection:send('requestComplete|' .. messageParts[2])
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2]))
                 return
             end
 
@@ -2414,21 +2418,22 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     readyStatus = "0"
                 end
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. readyStatus)
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|' .. readyStatus))
                 return
             end
 
             -- Expects message format: "getReceivedItemCount|requestId"
             -- Returns message format: "requestComplete|requestId|receivedItemCount"
             if command == 'getReceivedItemCount' then
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. lib.getReceivedItemCount())
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|'
+                        .. lib.getReceivedItemCount()))
                 return
             end
 
             -- Expects message format: "getRomName|requestId"
             -- Returns message format: "requestComplete|requestId|romName"
             if command == 'getRomName' then
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. lib.getRomName())
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|' .. lib.getRomName()))
                 return
             end
 
@@ -2441,7 +2446,7 @@ local runMessageWatcher = coroutine.wrap(function()
                     index = index + 2 -- Increment twice each loop
                 end
                 lib.setPlayerName(255,'APServer')
-                connection:send('requestComplete|' .. messageParts[2])
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2]))
                 return
             end
 
@@ -2457,14 +2462,15 @@ local runMessageWatcher = coroutine.wrap(function()
                             message = message .. "0"
                         end
                     end
-                connection:send(message)
+                connection:send(buildSocketMessage(message))
                 return
             end
 
             -- Expects message format: "getCurrentGameMode|requestId"
             -- Returns message format: "requestComplete|requestId|gameMode"
             if command == 'getCurrentGameMode' then
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. lib.getCurrentGameMode())
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|'
+                        .. lib.getCurrentGameMode()))
                 return
             end
 
@@ -2477,7 +2483,7 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     gameComplete = "0"
                 end
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. gameComplete)
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|' .. gameComplete))
                 return
             end
 
@@ -2490,7 +2496,7 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     death_link_enabled = "0"
                 end
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. death_link_enabled)
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|' .. death_link_enabled))
                 return
             end
 
@@ -2503,7 +2509,7 @@ local runMessageWatcher = coroutine.wrap(function()
                 else
                     link_is_alive = "0"
                 end
-                connection:send('requestComplete|' .. messageParts[2] .. '|' .. link_is_alive)
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2] .. '|' .. link_is_alive))
                 return
             end
 
@@ -2511,7 +2517,7 @@ local runMessageWatcher = coroutine.wrap(function()
             -- Returns message format: "requestComplete|requestId"
             if command == 'killLink' then
                 lib.killLink()
-                connection:send('requestComplete|' .. messageParts[2])
+                connection:send(buildSocketMessage('requestComplete|' .. messageParts[2]))
                 return
             end
         end)()

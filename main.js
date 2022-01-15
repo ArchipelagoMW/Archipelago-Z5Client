@@ -239,11 +239,24 @@ ipcMain.handle('writeToLog', (event, data) => fs.writeFileSync(logFile, `[${new 
 const hostname = '127.0.0.1';
 const port = 28920;
 const socketMessage = (msg) => `${msg}\r\n`;
+let incomingMessageBuffer = '';
 net.createServer((socket) => {
   const socketId = Math.random() * 1000000000;
 
   socket.on('data', (data) => {
-    const messageParts = data.toString().split('|');
+    const stringData = data.toString();
+    // If the message was broken into multiple parts, wait for the newline delimiter and buffer the message
+    if (stringData.slice(-1) !== '\n') {
+      incomingMessageBuffer += stringData;
+      return;
+    }
+
+    // Newline was received, so this message is complete. Append it to the message buffer, act on it,
+    // and clear the buffer
+    incomingMessageBuffer += stringData.slice(0, -1);
+    const messageParts = incomingMessageBuffer.split('|');
+    incomingMessageBuffer = '';
+
     const messageType = messageParts.splice(0,1)[0];
     switch (messageType) {
       case 'requestComplete':

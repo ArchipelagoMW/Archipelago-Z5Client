@@ -246,33 +246,23 @@ ipcMain.handle('writeToLog', (event, data) => fs.writeFileSync(logFile, `[${new 
 const hostname = '127.0.0.1';
 const port = 28920;
 const socketMessage = (msg) => `${msg}\r\n`;
-let incomingMessageBuffer = '';
 net.createServer((socket) => {
   const socketId = Math.random() * 1000000000;
 
+  // Buffer incoming socket messages. They may come in as incomplete, or multiple at once
+  let incomingMessageBuffer = '';
   socket.on('data', (data) => {
-    const stringData = data.toString();
-    // If the message was broken into multiple parts, wait for the newline delimiter and buffer the message
-    if (stringData.slice(-1) !== '\n') {
-      incomingMessageBuffer += stringData;
-      return;
-    }
+    // Add the new data to the buffer
+    incomingMessageBuffer += data.toString();
 
-    // Newline was received, so this message is complete. Append it to the message buffer, act on it,
-    // and clear the buffer
-    incomingMessageBuffer += stringData.slice(0, -1);
-    const messageParts = incomingMessageBuffer.split('|');
-    incomingMessageBuffer = '';
+    // So long as the buffer contains a newline character, it contains a completed message
+    while (incomingMessageBuffer.includes('\n')) {
+      // Find the first newline and handle the message before it
+      const newlineIndex = incomingMessageBuffer.indexOf('\n');
+      handleSocketMessage(incomingMessageBuffer.slice(0, newlineIndex));
 
-    const messageType = messageParts.splice(0,1)[0];
-    switch (messageType) {
-      case 'requestComplete':
-        uiWindow.webContents.send('requestComplete', messageParts);
-        break;
-
-      default:
-        console.warn(`Unknown message type received: ${messageType} with data:\n${JSON.stringify(messageParts)}`);
-        break;
+      // Remove the handled message from the buffer
+      incomingMessageBuffer = incomingMessageBuffer.slice(newlineIndex + 1);
     }
   });
 
@@ -298,6 +288,20 @@ net.createServer((socket) => {
 
   uiWindow.webContents.send('deviceConnected', true);
 }).listen(port, hostname);
+
+const handleSocketMessage = (message) => {
+  const messageParts = message.split('|');
+  const messageType = messageParts.splice(0,1)[0];
+  switch (messageType) {
+    case 'requestComplete':
+      uiWindow.webContents.send('requestComplete', messageParts);
+      break;
+
+    default:
+      console.warn(`Unknown message type received: ${messageType} with data:\n${JSON.stringify(messageParts)}`);
+      break;
+  }
+};
 
 // Interprocess communication with the renderer process, used for communication with OoT LUA Script
 ipcMain.on('receiveItem', (event, requestId, itemOffset) => {

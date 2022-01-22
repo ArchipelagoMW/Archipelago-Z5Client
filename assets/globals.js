@@ -9,7 +9,7 @@ const CLIENT_VERSION = {
 const ARCHIPELAGO_PROTOCOL_VERSION = {
   major: 0,
   minor: 2,
-  build: 3,
+  build: 4,
   class: 'Version',
 };
 

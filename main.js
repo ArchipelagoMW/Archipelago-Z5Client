@@ -23,7 +23,11 @@ const createLogFile = () => {
 
 process.on('uncaughtException', (error) => {
   const logFile = createLogFile();
-  fs.writeFileSync(logFile, `[${new Date().toLocaleString()}] ${JSON.stringify(error)}`);
+  const errorMessage = error.hasOwnProperty('message') ? error.message : JSON.stringify(error);
+  fs.writeFileSync(logFile, `\n[${new Date().toLocaleString()}] ${errorMessage}`);
+
+  const errorStack = error.hasOwnProperty('stack') ? error.stack : 'No stack trace available.';
+  fs.writeFileSync(logFile, `\n[${new Date().toLocaleString()}] ${errorStack}`);
 
   // If there is another client bound to the address, close this client
   if (error.code === 'EADDRINUSE') {
@@ -53,7 +57,15 @@ if (require('electron-squirrel-startup')) {
       key: '\\Software\\Classes\\archipelago.Z5client.v1',
     });
     descriptionKey.set(Registry.DEFAULT_VALUE, Registry.REG_SZ, 'Archipelago Binary Patch',
-      (error) => console.error(error));
+      (error) => {
+        console.error(error);
+        const errorMessage = error.hasOwnProperty('message') ? error.message : JSON.stringify(error);
+        fs.writeFileSync(logFile, `\n[${new Date().toLocaleString()}] Error while writing registry ` +
+          `values: ${errorMessage}`);
+
+        const errorStack = error.hasOwnProperty('stack') ? error.stack : 'No stack trace available.';
+        fs.writeFileSync(logFile, `\n[${new Date().toLocaleString()}] ${errorStack}`);
+      });
 
     // Set icon for .apz5 files
     const iconKey = new Registry({
@@ -141,6 +153,7 @@ app.whenReady().then(async () => {
   if (
     !config.hasOwnProperty('baseRomPath') || // Base ROM not present in config file
     !fs.existsSync(config.baseRomPath) || // Base ROM not present on file system
+    !['n64', 'z64'].includes(config.baseRomPath.slice(-3)) || // Base ROM has invalid extension
     !validRomHashes.includes(md5(fs.readFileSync(config.baseRomPath))) // Base ROM fails hash check
   ) {
     let baseRomPath = dialog.showOpenDialogSync(null, {
@@ -212,7 +225,11 @@ app.whenReady().then(async () => {
     }
   });
 }).catch((error) => {
-  fs.writeFileSync(logFile, `[${new Date().toLocaleString()}] ${JSON.stringify(error)}`);
+  const errorMessage = error.hasOwnProperty('message') ? error.message : JSON.stringify(error);
+  fs.writeFileSync(logFile, `\n[${new Date().toLocaleString()}] ${errorMessage}`);
+
+  const errorStack = error.hasOwnProperty('stack') ? error.stack : 'No stack trace available.';
+  fs.writeFileSync(logFile, `\n[${new Date().toLocaleString()}] ${errorStack}`);
 });
 
 // IPC listener for client config

@@ -23,7 +23,7 @@ options for you. You will still need to configure your controls upon first launc
 3. The client will ask you to select a base rom file. This should be the english version of Ocarina of Time.
 4. The client will automatically patch your base rom and place your new rom in the same location as your patch file.
 5. You may need to select a default program to launch N64 roms. If this is any emulator other than the BizHawk 
-downloaded during the installation process, you will need to close it and open the BizHawk 2.3 acquired using the
+downloaded during the installation process, you will need to close it and open the BizHawk 2.7 acquired using the
 `get-bizhawk.ps1` file.
 6. Open the `ootMulti.lua` script in the BizHawk LUA console. If the client is not running, the script will
 terminate and ask you to run the Z5Client before trying to run it again.

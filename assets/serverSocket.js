@@ -174,6 +174,7 @@ const connectToServer = async (address, password=null) => {
             tags,
             password: serverPassword,
             version: ARCHIPELAGO_PROTOCOL_VERSION,
+            items_handling: 0b001,
           };
           serverSocket.send(JSON.stringify([connectionData]));
           break;

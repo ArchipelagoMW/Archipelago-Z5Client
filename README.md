@@ -8,6 +8,8 @@ is not recommended to use this.
 - `ootMulti.lua`: This is the LUA script you will need to load into BizHawk after loading the randomizer ROM.
 
 ## How to Install
+**Note: The Z5Client requires Windows 8.1 or greater.**
+
 ### Z5Client
 Simply double-click on the `Z5Client-win32-x64-(version).exe` file, and the program will automatically install
 and launch. You may delete the setup file after installation.

@@ -10,6 +10,11 @@ contextBridge.exposeInMainWorld('logging', {
   writeToLog: (data) => ipcRenderer.invoke('writeToLog', data),
 });
 
+// Version checking
+contextBridge.exposeInMainWorld('versioning', {
+  clientUpdatePrompt: (tag) => ipcRenderer.invoke('clientUpdatePrompt', tag),
+});
+
 // OoT Interaction
 contextBridge.exposeInMainWorld('oot', {
   // Functions callable by renderer to cause IPCMain to perform an action

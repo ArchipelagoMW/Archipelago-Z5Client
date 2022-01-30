@@ -62,6 +62,15 @@ const getRandomDeathLinkMessage = (playerName) => {
 };
 
 window.addEventListener('load', async () => {
+  // Check for client updates
+  const versionUrl = 'https://api.github.com/repos/ArchipelagoMW/Z5Client/releases/latest';
+  fetch(new Request(versionUrl)).then(async (response) => {
+    const data = await response.json();
+    if (data.tag_name !== `v${CLIENT_VERSION.major}.${CLIENT_VERSION.minor}.${CLIENT_VERSION.patch}`) {
+      await window.versioning.clientUpdatePrompt(data.tag_name);
+    }
+  });
+
   // Handle server address change
   document.getElementById('server-address').addEventListener('keydown', async (event) => {
     if (event.key !== 'Enter') { return; }

@@ -8,7 +8,7 @@ is not recommended to use this.
 - `ootMulti.lua`: This is the LUA script you will need to load into BizHawk after loading the randomizer ROM.
 
 ## How to Install
-**Note: The Z5Client requires Windows 8.1 or greater.**
+**Note: The Z5Client requires either Windows 8.1 or greater, or Linux.**
 
 ### Z5Client
 Simply double-click on the `Z5Client-win32-x64-(version).exe` file, and the program will automatically install
@@ -44,3 +44,7 @@ npm install
 npm run electron-rebuild
 npm run start [patchFile]
 ```
+
+## Notes for Linux Users
+- To patch your ROM automatically, `wine` must be installed and available in either `/usr/bin/` or `/usr/sbin`.
+- Ensure the default wine configuration uses Windows 8 or greater, or the patching process will hang indefinitely

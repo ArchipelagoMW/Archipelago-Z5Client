@@ -208,11 +208,27 @@ app.whenReady().then(async () => {
         }
 
         if (process.platform === 'linux') {
-          // TODO: Check if wine is installed
+          // Check if wine is installed
+          if (!fs.existsSync(path.sep + path.join('usr', 'bin', 'wine')) &&
+              !fs.existsSync(path.sep + path.join('usr', 'sbin', 'wine'))
+          ) {
+            dialog.showMessageBoxSync(null, {
+              type: 'info',
+              title: 'Unable to Patch ROM',
+              message: 'wine could not be found on your system. Your ROM file will not be patched.',
+              buttons: ['Okay'],
+            });
+            break;
+          }
 
-          // TODO: Launch patcher with wine
+          // Launch patcher with wine and await completion
+          childProcess.execFileSync('wine',
+              [path.join(__dirname, 'oot-patcher', 'Patch.exe'), config.baseRomPath, arg, outPath],
+              { timeout: 60000 }
+          );
 
-          // TODO: Execute patched ROM, let OS decide what to do with it
+          // Execute patched ROM, let OS decide what to do with it
+          childProcess.execFile(outPath);
         }
       }
       // This was the patch file argument. Do not keep searching for it

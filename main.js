@@ -13,12 +13,13 @@ let logFile = null;
 
 const createLogFile = () => {
   // Create log file and open it for writing
-  if (!fs.existsSync(path.join(process.env.APPDATA, 'z5client-logs'))) {
-    fs.mkdirSync(path.join(process.env.APPDATA, 'z5client-logs'));
+  const appDataDir = app.getPath('appData');
+  if (!fs.existsSync(path.join(appDataDir, 'z5client-logs'))) {
+    fs.mkdirSync(path.join(appDataDir, 'z5client-logs'));
   }
 
   if (logFile) { return logFile; }
-  return fs.openSync(path.join(process.env.APPDATA, 'z5client-logs', `${new Date().getTime()}.txt`), 'w');
+  return fs.openSync(path.join(appDataDir, 'z5client-logs', `${new Date().getTime()}.txt`), 'w');
 };
 
 process.on('uncaughtException', (error) => {
@@ -133,7 +134,7 @@ const createPatchingWindow = () => {
 
 app.whenReady().then(async () => {
   // Create the local config file if it does not exist
-  const configPath = path.join(process.env.APPDATA, 'z5client.config.json');
+  const configPath = path.join(app.getPath('appData'), 'z5client.config.json');
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath,JSON.stringify({}));
   }
@@ -191,20 +192,30 @@ app.whenReady().then(async () => {
         await new Promise((r) => setTimeout(r, 250)); // Wait 250 milliseconds for the patching window to render
         const outPath = path.join(path.dirname(arg),
           `${path.basename(arg).substr(0, path.basename(arg).length - 5)}.n64`);
-        childProcess.execFileSync(path.join(__dirname, 'oot-patcher', 'Patch.exe'), // Path
-          [config.baseRomPath, arg, outPath],
-          { timeout: 60000 }); // Timeout the process after one minute
 
-        // If a custom launcher is specified, attempt to launch the ROM file using the specified loader
-        if (config.hasOwnProperty('launcherPath') && fs.existsSync(config.launcherPath)) {
-          childProcess.spawn(config.launcherPath, [outPath], { detached: true });
-          break;
-        }
-        // If no custom launcher is specified, launch the rom with explorer on Windows
         if (process.platform === 'win32') {
+          childProcess.execFileSync(path.join(__dirname, 'oot-patcher', 'Patch.exe'), // Path
+            [config.baseRomPath, arg, outPath],
+            { timeout: 60000 }); // Timeout the process after one minute
+
+          // If a custom launcher is specified, attempt to launch the ROM file using the specified loader
+          if (config.hasOwnProperty('launcherPath') && fs.existsSync(config.launcherPath)) {
+            childProcess.spawn(config.launcherPath, [outPath], { detached: true });
+            break;
+          }
+
           childProcess.spawn('explorer', [outPath], { detached: true });
         }
+
+        if (process.platform === 'linux') {
+          // TODO: Check if wine is installed
+
+          // TODO: Launch patcher with wine
+
+          // TODO: Execute patched ROM, let OS decide what to do with it
+        }
       }
+      // This was the patch file argument. Do not keep searching for it
       break;
     }
   }
@@ -235,7 +246,7 @@ app.whenReady().then(async () => {
 // IPC listener for client config
 ipcMain.on('setLauncher', (event, args) => {
   // Allow the user to specify a program to launch the ROM
-  const configPath = path.join(process.env.APPDATA, 'z5client.config.json');
+  const configPath = path.join(app.getPath('appData'), 'z5client.config.json');
   const config = JSON.parse(fs.readFileSync(configPath).toString());
   const launcherPath = dialog.showOpenDialogSync({
     title: 'Locate ROM Launcher',

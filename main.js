@@ -284,6 +284,12 @@ const hostname = '127.0.0.1';
 const port = 28920;
 const socketMessage = (msg) => `${msg}\r\n`;
 net.createServer((socket) => {
+  // If there is already a client connected, reject the connection
+  if (Object.keys(socketClients).length > 0) {
+    socket.destroy();
+    return;
+  }
+
   const socketId = Math.random() * 1000000000;
 
   // Buffer incoming socket messages. They may come in as incomplete, or multiple at once

@@ -1,6 +1,6 @@
 {
   "name": "z5client",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "author": "Chris Wilson <chris@legendserver.info>",
   "description": "A Z5 client designed for use with the Archipelago implementation of the Ocarina of Time randomizer.",
   "license": "MIT",
@@ -20,7 +20,7 @@
     "url": "https://github.com/LegendaryLinux/Z5Client/issues"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.5.3",
+    "@grpc/grpc-js": "^1.5.7",
     "electron-squirrel-startup": "^1.0.0",
     "google-protobuf": "^3.19.4",
     "js-yaml": "^4.1.0",
@@ -36,7 +36,7 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.63",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
-    "electron": "^15.3.6",
+    "electron": "^15.3.7",
     "electron-rebuild": "^3.2.7"
   },
   "config": {

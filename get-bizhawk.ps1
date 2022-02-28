@@ -52,6 +52,15 @@ $config = $config -replace '"Bindings": ".*"', '"Bindings": ""' # Disable all ho
 $config = $config -replace '"DefaultBinding": ".*"', '"DefaultBinding": ""' # Disable all default hotkeys
 $config = $config -replace '"RunInBackground": false', '"RunInBackground": true' # Run in background
 $config = $config -replace '"AcceptBackgroundInput": false', '"AcceptBackgroundInput": true' # Enable background input
+
+# Disable some annoying default control settings
+echo "Disabling annoying default control settings..."
+$config = $config -replace '"P1 A Up": ".*"', '"P1 A Up": ""'
+$config = $config -replace '"P1 A Down": ".*"', '"P1 A Down": ""'
+$config = $config -replace '"P1 A Left": ".*"', '"P1 A Left": ""'
+$config = $config -replace '"P1 A Right": ".*"', '"P1 A Right": ""'
+
+# Write the updated config file
 Out-File -FilePath "$bizHawkDir\config.ini" -InputObject $config
 
 # Download LuaSocket
